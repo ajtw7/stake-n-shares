@@ -26,13 +26,37 @@ A personal investment + betting analytics dashboard that allows users to **simul
 The platform helps users see how **betting strategies** stack up against **investing strategies**, with insights into **ROI**, **volatility**, and **risk-adjusted performance**.
 
 <!-- Placeholder for 3 images in a row (flexbox, center, space around, equal size) representing mockups -->
-<!-- ...existing code... -->
-| <img src="/design/analytics-dash.png" width="420" /> | <img src="/design/recent-activity.png" width="420" /> | <img src="/design/browser-market_data.png" width="420" /> |
-|---:|:---:|:---|
-| Analytics dashboard | Recent activity | Market data |
-| <img src="/design/browser-sporting_events.png" width="420" /> | <img src="/design/browser-watchlist.png" width="420" /> | <img src="/design/performance-reports_1.png" width="420" /> |
-| Sporting events | Watchlist | Performance reports |
-<!-- ...existing code... -->
+<div style="display:flex; flex-wrap:wrap; justify-content:space-around; gap:1rem; align-items:flex-start;">
+  <figure style="width:48%; text-align:center; margin:0;">
+    <img src="/design/analytics-dash.png" alt="Analytics dashboard" style="width:100%; height:auto; display:block; margin:0 auto;" />
+    <figcaption>Analytics dashboard</figcaption>
+  </figure>
+
+  <figure style="width:48%; text-align:center; margin:0;">
+    <img src="/design/recent-activity.png" alt="Recent activity" style="width:100%; height:auto; display:block; margin:0 auto;" />
+    <figcaption>Recent activity</figcaption>
+  </figure>
+
+  <figure style="width:48%; text-align:center; margin:1rem 0 0 0;">
+    <img src="/design/browser-market_data.png" alt="Market data" style="width:100%; height:auto; display:block; margin:0 auto;" />
+    <figcaption>Market data</figcaption>
+  </figure>
+
+  <figure style="width:48%; text-align:center; margin:1rem 0 0 0;">
+    <img src="/design/browser-sporting_events.png" alt="Sporting events" style="width:100%; height:auto; display:block; margin:0 auto;" />
+    <figcaption>Sporting events</figcaption>
+  </figure>
+
+  <figure style="width:48%; text-align:center; margin:1rem 0 0 0;">
+    <img src="/design/browser-watchlist.png" alt="Watchlist" style="width:100%; height:auto; display:block; margin:0 auto;" />
+    <figcaption>Watchlist</figcaption>
+  </figure>
+
+  <figure style="width:48%; text-align:center; margin:1rem 0 0 0;">
+    <img src="/design/performance-reports_1.png" alt="Performance reports" style="width:100%; height:auto; display:block; margin:0 auto;" />
+    <figcaption>Performance reports</figcaption>
+  </figure>
+</div>
 
 
 ---

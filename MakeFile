@@ -1,0 +1,22 @@
+.PHONY: run test seed install venv
+
+# run dev server
+run:
+    python -m uvicorn backend.app.main:app --reload --port 8000
+
+# run tests
+test:
+    pytest -q
+
+# print / post demo payload
+seed:
+    python scripts/seed_demo.py
+
+# install deps from requirements.txt into the active venv
+install:
+    pip install -r requirements.txt
+
+# create a venv and install deps (one-liner for macOS)
+venv:
+    python3 -m venv .venv
+    . .venv/bin/activate && python -m pip install --upgrade pip && pip install -r requirements.txt
