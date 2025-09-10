@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 import os
 from backend.app.api.v1.compare import router as compare_router
+from backend.app.api.v1.nfl_events import router as nfl_events_router
 from backend.app.services import fetch_equity_return_pct
 
 load_dotenv()  # Loads variables from .env
@@ -12,6 +13,7 @@ ODDS_API_KEY = os.getenv("ODDS_API_KEY")
 
 app = FastAPI(title="Stake N' Shares — MDM")
 app.include_router(compare_router, prefix="/api/v1")
+app.include_router(nfl_events_router, prefix="/api/v1")
 
 # Add this to backend/app/main.py for a quick check
 # @app.get("/debug/env")
