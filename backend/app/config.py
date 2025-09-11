@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     USE_EXTERNAL_APIS: bool = False
@@ -7,7 +7,10 @@ class Settings(BaseSettings):
     ALPACA_BASE_URL: str | None = None
     ODDS_API_KEY: str | None = None
 
-    class Config:
-        env_file = ".env"
+    # Pydantic v2 settings config
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore"  # ignore unexpected env vars instead of error
+    )
 
 settings = Settings()

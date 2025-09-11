@@ -1,26 +1,50 @@
 import os
 import requests
+from typing import Dict, Any
 from .schemas import CompareRequest
 
-def compute_compare(req: CompareRequest):
-    start = req.starting_capital
-    equity_cap = start * req.equity_weight
-    bet_cap = start * (1 - req.equity_weight)
+def execute_compare(req: CompareRequest) -> Dict[str, Any]:
+    """
+    Core comparison calculation.
+    Assumes:
+      - req.bet.odds is resolved (historical or fallback)
+      - req.equity_return_pct already fetched / set
+    Returns a serializable result dict.
+    """
+    starting_capital = req.starting_capital
+    equity_alloc = starting_capital * req.equity_weight
+    bet_alloc = starting_capital - equity_alloc
 
-    equity_pnl = equity_cap * req.equity_return_pct
-    bet_pnl = req.bet.stake * (req.bet.odds - 1) if req.bet.outcome == "win" else -req.bet.stake
+    # Equity final value
+    equity_final = equity_alloc * (1 + req.equity_return_pct)
+    equity_pnl = equity_final - equity_alloc
 
-    final_equity = equity_cap + equity_pnl
-    final_bet = bet_cap + bet_pnl
-    combined = final_equity + final_bet
-    roi_pct = (combined - start) / start * 100.0
+    # Bet PnL (simple win/loss model)
+    if req.bet.outcome == "win":
+        bet_pnl = req.bet.stake * (req.bet.odds - 1)
+    else:
+        bet_pnl = 0.0
+    bet_final = bet_alloc + bet_pnl
+
+    combined_final = equity_final + bet_final
+    roi_pct = (combined_final - starting_capital) / starting_capital * 100
 
     return {
-        "starting_capital": start,
-        "equity": {"symbol": req.equity_symbol, "allocated": round(equity_cap,2), "pnl": round(equity_pnl,2), "final": round(final_equity,2)},
-        "bet": {"event": f"{req.bet.league}:{req.bet.event_id}", "allocated": round(bet_cap,2), "pnl": round(bet_pnl,2), "final": round(final_bet,2)},
-        "combined_final": round(combined,2),
-        "roi_pct": round(roi_pct,2)
+        "starting_capital": starting_capital,
+        "equity": {
+            "symbol": req.equity_symbol,
+            "allocated": round(equity_alloc, 2),
+            "pnl": round(equity_pnl, 2),
+            "final": round(equity_final, 2)
+        },
+        "bet": {
+            "event": f"{req.bet.league}:{req.bet.event_id}",
+            "allocated": round(bet_alloc, 2),
+            "pnl": round(bet_pnl, 2),
+            "final": round(bet_final, 2)
+        },
+        "combined_final": round(combined_final, 2),
+        "roi_pct": round(roi_pct, 2)
     }
 
 def fetch_equity_return_pct(symbol: str, start: str, end: str) -> float | None:
