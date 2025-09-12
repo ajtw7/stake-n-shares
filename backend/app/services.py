@@ -1,7 +1,14 @@
 import os
 import requests
+import logging
 from typing import Dict, Any
-from .schemas import CompareRequest
+from backend.app.schemas import CompareRequest, Bet
+from backend.app.config import settings
+
+logger = logging.getLogger(__name__)
+
+FALLBACK_ODDS = 2.0
+FALLBACK_EQUITY_RETURN = 0.0
 
 def execute_compare(req: CompareRequest) -> Dict[str, Any]:
     """
@@ -118,46 +125,61 @@ def fetch_nfl_moneyline_odds(event_id: str, snapshot_ts: str) -> float | None:
     except Exception:
         return None
 
-# ADDED: odds_date param to allow historical odds snapshot separate from equity window
 def build_compare_request_with_live_data(
     starting_capital: float,
     equity_symbol: str,
     equity_weight: float,
-    bet_data: dict,
+    bet_data: Dict[str, Any],
     start: str,
     end: str,
-    odds_date: str | None = None  # <-- ADDED
+    odds_date: str | None
 ) -> CompareRequest:
-    from .schemas import CompareRequest, Bet
-    from backend.app.config import settings
+    user_supplied_odds = bet_data.get("odds", None)
+    resolved_odds = user_supplied_odds
+    used_fallback = False
 
-    # Default/fallback values (if live not enabled or fetch fails)
-    equity_return_pct = bet_data.get("equity_return_pct", 0.0)
-    odds = bet_data.get("odds")
+    # Default equity return
+    equity_return_pct = FALLBACK_EQUITY_RETURN
 
     if settings.USE_EXTERNAL_APIS:
-        # Live equity return
-        live_ret = fetch_equity_return_pct(equity_symbol, start, end)
-        if live_ret is not None:
-            equity_return_pct = live_ret
+        # Equity return attempt
+        eq_ret = fetch_equity_return_pct(equity_symbol, start, end)
+        if eq_ret is not None:
+            equity_return_pct = eq_ret
+        else:
+            logger.info("equity_return_fallback symbol=%s start=%s end=%s", equity_symbol, start, end)
 
-        # Live / historical odds only if NFL and odds missing or zero
-        if (bet_data.get("league", "").lower() == "nfl") and bet_data.get("event_id"):
-            if not odds or odds <= 0:
-                snapshot_date = odds_date or start  # use provided odds_date else reuse start
-                live_odds = fetch_nfl_moneyline_odds(bet_data["event_id"], snapshot_date)
-                if live_odds:
-                    odds = live_odds
+        # Only fetch odds if user did not supply fixed odds
+        if resolved_odds is None:
+            fetched_odds = None
+            if odds_date:
+                fetched_odds = fetch_nfl_moneyline_odds(bet_data["event_id"], odds_date)
+            else:
+                # (Optional) implement live odds endpoint; for now reuse historical if you want
+                # fetched_odds = fetch_live_moneyline_odds(...)
+                fetched_odds = None
 
-    # Final safety fallbacks
-    if odds is None or odds <= 0:
-        odds = 2.0
+            if fetched_odds is not None:
+                resolved_odds = fetched_odds
+                logger.info("odds_resolved event=%s snapshot=%s price=%s", bet_data["event_id"], odds_date, resolved_odds)
+            else:
+                logger.info("odds_fallback event=%s snapshot=%s", bet_data["event_id"], odds_date)
 
-    bet = Bet(**{**bet_data, "odds": odds})
-    return CompareRequest(
+    # Apply fallback if still None
+    if resolved_odds is None:
+        resolved_odds = FALLBACK_ODDS
+        used_fallback = True
+
+    bet = Bet(**{**bet_data, "odds": resolved_odds})
+    if used_fallback:
+        setattr(bet, "_fallback", True)
+
+    req = CompareRequest(
         starting_capital=starting_capital,
         equity_symbol=equity_symbol,
         equity_weight=equity_weight,
         equity_return_pct=equity_return_pct,
-        bet=bet
+        bet=bet,
+        snapshot_timestamp=odds_date
     )
+    return req

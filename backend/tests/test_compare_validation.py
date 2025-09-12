@@ -1,6 +1,8 @@
 import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
+import logging
+logger = logging.getLogger("tests.compare.validation")
 
 client = TestClient(app)
 
@@ -70,36 +72,84 @@ def test_malformed_odds_date():
 # --- Success / happy-path & edge cases ---
 
 def test_happy_path_success_win():
-    """Valid request should return 200 and expected deterministic ROI with fallbacks (no external APIs)."""
     body = BASE_BODY.copy()
-    # Ensure odds None so fallback (2.0) path exercised
     body["bet"] = body["bet"].copy()
     body["bet"]["odds"] = None
+    expected_equity_alloc = 700.0
+    expected_bet_alloc = 300.0
+    logger.info("TEST start=happy_path_success_win expected_equity_alloc=%s expected_bet_alloc=%s fallback_odds=2.0",
+                expected_equity_alloc, expected_bet_alloc)
     r = client.post("/api/v1/compare?start=2025-02-02&end=2025-02-10", json=body)
-    assert r.status_code == 200, r.text
+    logger.info("RESPONSE status=%s body=%s", r.status_code, r.text)
+    assert r.status_code == 200
     data = r.json()
-    # With starting_capital=1000, equity_weight=0.7 => equity_alloc=700, bet_alloc=300
-    # equity_return_pct fallback=0 => equity final 700 (pnl 0)
-    # bet: stake 100, odds fallback 2.0, outcome win => pnl 100, bet final 400
-    # combined = 1100, ROI = 10%
     assert data["starting_capital"] == 1000
-    assert data["equity"]["allocated"] == 700.0
+    assert data["equity"]["allocated"] == expected_equity_alloc
     assert data["equity"]["pnl"] == 0.0
-    assert data["bet"]["allocated"] == 300.0
+    assert data["bet"]["allocated"] == expected_bet_alloc
     assert data["bet"]["pnl"] == 100.0
     assert data["combined_final"] == 1100.0
     assert data["roi_pct"] == 10.0
-
+    logger.info("ASSERT success roi_pct=%s", data["roi_pct"])
 
 def test_happy_path_outcome_loss():
-    """Outcome loss should yield zero bet PnL and ROI 0 given zero equity return."""
     body = BASE_BODY.copy()
     body["bet"] = body["bet"].copy()
     body["bet"]["outcome"] = "loss"
-    body["bet"]["odds"] = None  # force fallback odds path (should not matter for loss)
+    body["bet"]["odds"] = None
+    logger.info("TEST start=happy_path_outcome_loss expecting zero bet pnl")
     r = client.post("/api/v1/compare?start=2025-02-02&end=2025-02-10", json=body)
-    assert r.status_code == 200, r.text
+    logger.info("RESPONSE status=%s body=%s", r.status_code, r.text)
+    assert r.status_code == 200
     data = r.json()
     assert data["bet"]["pnl"] == 0.0
     assert data["combined_final"] == 1000.0
-    assert data["roi_pct"] == 0.0
+    logger.info("ASSERT success combined_final=%s", data["combined_final"])
+
+def test_metadata_no_snapshot_fallback():
+    body = BASE_BODY.copy()
+    body["bet"] = body["bet"].copy()
+    body["bet"]["odds"] = None
+    logger.info("TEST metadata_no_snapshot_fallback expecting fallback_used=True")
+    r = client.post("/api/v1/compare?start=2025-02-02&end=2025-02-10", json=body)
+    meta = r.json()["odds_meta"]
+    logger.info("META %s", meta)
+    assert meta["snapshot_timestamp"] is None
+    assert meta["resolved_odds"] == 2.0
+    assert meta["fallback_used"] is True
+
+def test_metadata_no_snapshot_explicit_odds():
+    body = BASE_BODY.copy()
+    body["bet"] = body["bet"].copy()
+    body["bet"]["odds"] = 2.25
+    logger.info("TEST metadata_no_snapshot_explicit_odds expecting fallback_used=False")
+    r = client.post("/api/v1/compare?start=2025-02-02&end=2025-02-10", json=body)
+    meta = r.json()["odds_meta"]
+    logger.info("META %s", meta)
+    assert meta["snapshot_timestamp"] is None
+    assert meta["resolved_odds"] == 2.25
+    assert meta["fallback_used"] is False
+
+def test_metadata_with_snapshot_fallback():
+    body = BASE_BODY.copy()
+    body["bet"] = body["bet"].copy()
+    body["bet"]["odds"] = None
+    snap = "2025-02-09T22:25:38Z"
+    logger.info("TEST metadata_with_snapshot_fallback snapshot=%s", snap)
+    r = client.post(f"/api/v1/compare?start=2025-02-02&end=2025-02-10&odds_date={snap}", json=body)
+    meta = r.json()["odds_meta"]
+    logger.info("META %s", meta)
+    assert meta["snapshot_timestamp"] == snap
+    assert meta["resolved_odds"] == 2.0
+    assert meta["fallback_used"] is True
+
+def test_metadata_explicit_odds_no_fallback():
+    body = BASE_BODY.copy()
+    body["bet"] = body["bet"].copy()
+    body["bet"]["odds"] = 2.3   # explicit fixed odds
+    r = client.post("/api/v1/compare?start=2025-02-02&end=2025-02-10", json=body)
+    assert r.status_code == 200
+    meta = r.json()["odds_meta"]
+    assert meta["snapshot_timestamp"] is None
+    assert meta["resolved_odds"] == 2.3
+    assert meta["fallback_used"] is False
