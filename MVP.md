@@ -172,6 +172,3 @@ Client → FastAPI route → validation → request model → (optional fetch) �
 - Creates a foundation to demonstrate value of timing and allocation decisions.
 - Keeps scope tight: one bet, one equity slice, clear output.
 
----
-
-Questions or need a “multi-snapshot roadmap” draft? Ask anytime.
