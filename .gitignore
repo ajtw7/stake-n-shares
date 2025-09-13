@@ -209,3 +209,5 @@ __marimo__/
 # Miscellaneous
 # design/
 venv/
+frontend/node_modules
+frontend/dist
