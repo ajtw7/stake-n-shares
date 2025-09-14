@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { postCompare } from '../api/compare';
 import type { CompareRequest, CompareResponse } from '../types/compare';
+import { ResultPanel } from './ResultPanel';
 
 interface FormState {
   starting_capital: string;
@@ -211,25 +212,10 @@ export function CompareForm() {
       )}
 
       {result && (
-        <div style={{marginTop:16, padding:12, border:'1px solid #333', borderRadius:6, background:'#111'}}>
-          <h3 style={{marginTop:0}}>Result</h3>
-          <p style={{margin:'4px 0'}}>Combined Final: {result.combined_final} (ROI {result.roi_pct}%)</p>
-          <p style={{margin:'4px 0'}}>Equity {result.equity.symbol}: final {result.equity.final} (PnL {result.equity.pnl})</p>
-          <p style={{margin:'4px 0'}}>Bet: final {result.bet.final} (PnL {result.bet.pnl})</p>
-          <p style={{margin:'4px 0'}}>
-            Odds Used: {result.odds_meta.resolved_odds}{' '}
-            {result.odds_meta.snapshot_timestamp
-              ? `(snapshot ${result.odds_meta.snapshot_timestamp})`
-              : '(live/explicit)'}{' '}
-            {result.odds_meta.fallback_used && <span style={{color:'orange'}}>Fallback</span>}
-          </p>
-          <details style={{marginTop:8}}>
-            <summary style={{cursor:'pointer'}}>Raw JSON</summary>
-            <pre style={{fontSize:11, overflowX:'auto', color:'#0f0'}}>
-{JSON.stringify(result, null, 2)}
-            </pre>
-          </details>
-        </div>
+        <ResultPanel
+          data={result}
+          onReset={() => { setResult(null); setError(null); }}
+        />
       )}
     </div>
   );
