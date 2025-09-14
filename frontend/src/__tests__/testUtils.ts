@@ -1,0 +1,1 @@
+export type MockFn = ReturnType<typeof vi.fn>;

@@ -1,6 +1,7 @@
 import type { CompareRequest, CompareResponse } from '../types/compare';
+import { API_BASE } from '../config';
 
-const BASE = import.meta.env.VITE_API_BASE;
+const BASE = API_BASE;
 
 function ensureBase() {
   if (!BASE) {

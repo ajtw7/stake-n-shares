@@ -58,14 +58,17 @@ export function ResultPanel({ data, onReset }: Props) {
           <strong>Odds Used:</strong> {fmtNumber(odds_meta.resolved_odds)}{' '}
           <span style={{fontSize:12, opacity:0.8}}>({snapshotLabel})</span>{' '}
           {odds_meta.fallback_used && (
-            <span style={{
-              background:'#ff980033',
-              color:'#ffb74d',
-              padding:'2px 6px',
-              borderRadius:4,
-              fontSize:11,
-              marginLeft:6
-            }}>
+            <span
+              data-testid="fallback-badge"
+              style={{
+                background:'#ff980033',
+                color:'#ffb74d',
+                padding:'2px 6px',
+                borderRadius:4,
+                fontSize:11,
+                marginLeft:6
+              }}
+            >
               Fallback
             </span>
           )}
