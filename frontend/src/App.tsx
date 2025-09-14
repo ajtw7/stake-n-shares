@@ -1,12 +1,9 @@
-import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import { CompareTester } from './components/CompareTester'
+import { CompareForm } from './components/CompareForm'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
       <div>
@@ -18,17 +15,9 @@ function App() {
         </a>
       </div>
       <h1>Stake-n-Shares Frontend MVP</h1>
-      <div className="card">
-        <button onClick={() => setCount(c => c + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Replace this area as components evolve.
-        </p>
-      </div>
-      <CompareTester />
+      <CompareForm />
       <p className="read-the-docs">
-        Next: implement full CompareForm (Phase 2).
+        Next: add refinement (validation messages, formatting helpers, persistence).
       </p>
     </>
   )
