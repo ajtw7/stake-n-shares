@@ -1,4 +1,8 @@
 {
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "types": ["vitest", "@testing-library/jest-dom"]
+  },
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },

@@ -1,5 +1,6 @@
 import type { CompareResponse } from '../types/compare';
 import { fmtCurrency, fmtPercent, fmtNumber } from '../utils/format';
+import { tokens } from '../styles/tokens';
 
 interface Props {
   data: CompareResponse;
@@ -16,9 +17,9 @@ export function ResultPanel({ data, onReset }: Props) {
     <div style={{
       marginTop:16,
       padding:16,
-      border:'1px solid #2d2d2d',
+      border: `1px solid ${tokens.color.border}`,
       borderRadius:8,
-      background:'#121212'
+      background: tokens.color.bgPanel
     }}>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8}}>
         <h3 style={{margin:0, fontSize:18}}>Result</h3>
