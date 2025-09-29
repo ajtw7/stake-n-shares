@@ -211,3 +211,5 @@ __marimo__/
 venv/
 frontend/node_modules
 frontend/dist
+.code-workspace
+/node_modules

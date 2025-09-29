@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from "react";
 import { postCompare } from '../api/compare';
 import type { CompareRequest, CompareResponse } from '../types/compare';
 import { ResultPanel } from './ResultPanel';
@@ -21,9 +21,13 @@ const initial: FormState = {
   odds_date: ''
 };
 
-export function CompareForm() {
+type Props = {
+  onSubmit: (payload: any, params: { start: string; end: string; odds_date?: string }) => Promise<void>;
+  submitting?: boolean;
+};
+
+export function CompareForm({ onSubmit, submitting }: Props) {
   const [form, setForm] = useState<FormState>(initial);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CompareResponse | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string,string>>({});
@@ -32,7 +36,7 @@ export function CompareForm() {
     setForm(f => ({ ...f, [k]: v }));
   }
 
-  async function submit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setResult(null);
@@ -53,7 +57,6 @@ export function CompareForm() {
       return;
     }
 
-    setSubmitting(true);
     try {
       const v = parsed.data;
       const payload: CompareRequest = {
@@ -73,13 +76,10 @@ export function CompareForm() {
         end: v.end,
         ...(v.odds_date ? { odds_date: v.odds_date } : {})
       };
-      const resp = await postCompare(payload, params);
-      setResult(resp);
+      await onSubmit(payload, params);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Request failed';
       setError(msg);
-    } finally {
-      setSubmitting(false);
     }
   }
 
@@ -92,7 +92,7 @@ export function CompareForm() {
   return (
     <div style={{marginTop:'1.5rem', textAlign:'left', maxWidth:640, backgroundColor:tokens.color.bgPanel}}>
       <h2 style={{marginBottom:8}}>Compare Scenario</h2>
-      <form onSubmit={submit} style={{display:'grid', gap:'0.75rem'}}>
+      <form onSubmit={handleSubmit} style={{display:'grid', gap:'0.75rem'}}>
         <div style={{display:'flex', gap:12}}>
           <label style={{flex:1}}>
             Starting Capital
@@ -203,7 +203,7 @@ export function CompareForm() {
         </div>
 
         <div style={{display:'flex', gap:12, alignItems:'center'}}>
-          <button type="submit" disabled={submitting}>
+          <button type="submit" className="btn primary" disabled={submitting}>
             {submitting ? 'Running...' : 'Run Comparison'}
           </button>
           {submitting && <span style={{fontSize:12, opacity:0.7}}>Processing...</span>}
