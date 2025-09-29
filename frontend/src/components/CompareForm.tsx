@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { postCompare } from '../api/compare';
 import type { CompareRequest, CompareResponse } from '../types/compare';
 import { ResultPanel } from './ResultPanel';
 import { compareFormSchema, type CompareFormValues } from '../validation/compare';
@@ -89,130 +88,168 @@ export function CompareForm({ onSubmit, submitting }: Props) {
     return <div style={{color:tokens.color.danger, fontSize:11, marginTop:2}}>{msg}</div>;
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '8px 10px',
+    border: '1px solid #d1d7e0',
+    borderRadius: 6,
+    fontSize: 14,
+    background: '#ffffff',
+    outline: 'none'
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    flex: 1
+  };
+
   return (
-    <div style={{marginTop:'1.5rem', textAlign:'left', maxWidth:640, backgroundColor:tokens.color.bgPanel}}>
-      <h2 style={{marginBottom:8}}>Compare Scenario</h2>
-      <form onSubmit={handleSubmit} style={{display:'grid', gap:'0.75rem'}}>
-        <div style={{display:'flex', gap:12}}>
-          <label style={{flex:1}}>
+    <div
+      style={{
+        marginTop: '1.5rem',
+        textAlign: 'left',
+        width: '100%',            // ensure full width so parent can stack
+        boxSizing: 'border-box',
+        backgroundColor: '#fbfdff',   // lighter panel instead of black
+        padding: 16,                  // visual padding
+        borderRadius: 8,
+        border: '1px solid #e6ecf2'
+      }}
+    >
+      <h2 style={{ marginBottom: 8 }}>Compare Scenario</h2>
+      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.75rem', width: '100%' }}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <label style={labelStyle}>
             Starting Capital
             <input
               type="number"
               value={form.starting_capital}
-              onChange={e=>update('starting_capital', e.target.value)}
+              onChange={e => update('starting_capital', e.target.value)}
+              style={inputStyle}
             />
             {FE('starting_capital')}
           </label>
-          <label style={{flex:1}}>
+          <label style={labelStyle}>
             Equity Symbol
             <input
               value={form.equity_symbol}
-              onChange={e=>update('equity_symbol', e.target.value)}
+              onChange={e => update('equity_symbol', e.target.value)}
+              style={inputStyle}
             />
             {FE('equity_symbol')}
           </label>
-          <label style={{flex:1}}>
+          <label style={labelStyle}>
             Equity Weight
             <input
               type="number"
               step="0.01"
               value={form.equity_weight}
-              onChange={e=>update('equity_weight', e.target.value)}
+              onChange={e => update('equity_weight', e.target.value)}
+              style={inputStyle}
             />
             {FE('equity_weight')}
           </label>
         </div>
 
-        <div style={{display:'flex', gap:12}}>
-          <label style={{flex:1}}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <label style={labelStyle}>
             League
             <input
               value={form.league}
-              onChange={e=>update('league', e.target.value)}
+              onChange={e => update('league', e.target.value)}
+              style={inputStyle}
             />
             {FE('league')}
           </label>
-          <label style={{flex:2}}>
+          <label style={{ flex: 2, display: 'block' }}>
             Event ID
             <input
               value={form.event_id}
-              onChange={e=>update('event_id', e.target.value)}
+              onChange={e => update('event_id', e.target.value)}
+              style={inputStyle}
             />
             {FE('event_id')}
           </label>
-          <label style={{flex:1}}>
+          <label style={labelStyle}>
             Stake
             <input
               type="number"
               value={form.stake}
-              onChange={e=>update('stake', e.target.value)}
+              onChange={e => update('stake', e.target.value)}
+              style={inputStyle}
             />
             {FE('stake')}
           </label>
         </div>
 
-        <div style={{display:'flex', gap:12}}>
-          <label style={{flex:1}}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <label style={labelStyle}>
             Odds (blank = fetch)
             <input
               value={form.odds}
-              onChange={e=>update('odds', e.target.value)}
+              onChange={e => update('odds', e.target.value)}
               placeholder="e.g. 150"
+              style={inputStyle}
             />
             {FE('odds')}
           </label>
-          <label style={{flex:1}}>
+          <label style={labelStyle}>
             Outcome
             <select
               value={form.outcome}
-              onChange={e=>update('outcome', e.target.value as 'win'|'loss')}
+              onChange={e => update('outcome', e.target.value as 'win'|'loss')}
+              style={{ ...inputStyle, paddingTop: 8, paddingBottom: 8 }}
             >
               <option value="win">win</option>
               <option value="loss">loss</option>
             </select>
           </label>
-          <label style={{flex:1}}>
+          <label style={labelStyle}>
             Odds Snapshot
             <input
               type="datetime-local"
               value={form.odds_date}
-              onChange={e=>update('odds_date', e.target.value)}
+              onChange={e => update('odds_date', e.target.value)}
+              style={inputStyle}
             />
           </label>
         </div>
 
-        <div style={{display:'flex', gap:12}}>
-          <label style={{flex:1}}>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <label style={labelStyle}>
             Start Date
             <input
               type="date"
               value={form.start}
-              onChange={e=>update('start', e.target.value)}
+              onChange={e => update('start', e.target.value)}
+              style={inputStyle}
             />
             {FE('start')}
           </label>
-            <label style={{flex:1}}>
+          <label style={labelStyle}>
             End Date
             <input
               type="date"
               value={form.end}
-              onChange={e=>update('end', e.target.value)}
+              onChange={e => update('end', e.target.value)}
+              style={inputStyle}
             />
             {FE('end')}
           </label>
         </div>
 
-        <div style={{display:'flex', gap:12, alignItems:'center'}}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           <button type="submit" className="btn primary" disabled={submitting}>
             {submitting ? 'Running...' : 'Run Comparison'}
           </button>
-          {submitting && <span style={{fontSize:12, opacity:0.7}}>Processing...</span>}
+          {submitting && <span style={{ fontSize: 12, opacity: 0.7 }}>Processing...</span>}
         </div>
       </form>
 
       {error && (
-        <div style={{marginTop:12}}>
-          <pre style={{color:'red', whiteSpace:'pre-wrap'}}>{error}</pre>
+        <div style={{ marginTop: 12 }}>
+          <pre style={{ color: 'red', whiteSpace: 'pre-wrap' }}>{error}</pre>
         </div>
       )}
 

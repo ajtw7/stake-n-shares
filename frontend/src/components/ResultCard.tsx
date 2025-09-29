@@ -1,4 +1,3 @@
-
 function OddsMeta({ meta }: { meta: any }) {
   if (!meta) return null;
   return (
@@ -14,9 +13,9 @@ export default function ResultCard({ data }: { data: any }) {
   const eq = data.equity;
   const bet = data.bet;
   return (
-    <div className="result-card">
-      <div className="row">
-        <div className="box">
+    <div className="result-card" style={{ width: '100%', boxSizing: 'border-box' }}>
+      <div className="row" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+        <div className="box" style={{ flex: 1, minWidth: 0 }}>
           <h3>Equity</h3>
           <div className="big">{eq.symbol}</div>
           <div>Allocated: ${eq.allocated}</div>
@@ -24,7 +23,7 @@ export default function ResultCard({ data }: { data: any }) {
           <div>Final: ${eq.final}</div>
         </div>
 
-        <div className="box">
+        <div className="box" style={{ flex: 1, minWidth: 0 }}>
           <h3>Bet</h3>
           <div className="big">{bet.event}</div>
           <div>Allocated: ${bet.allocated}</div>

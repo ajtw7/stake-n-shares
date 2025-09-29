@@ -4,6 +4,7 @@ import ResultCard from "./components/ResultCard";
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './App.css'
 import './styles.css'
+import { postCompare } from './api/compare';
 
 export default function App(): JSX.Element {
   const [result, setResult] = useState<any | null>(null);
@@ -20,7 +21,7 @@ export default function App(): JSX.Element {
           </div>
         </header>
 
-        <main className="container">
+        <main className="stack-column">
           <section className="panel panel-form">
             <h2>Run a comparison</h2>
             <p className="muted">Pick equity range, allocate %, and a single bet. Results show combined outcome and odds metadata.</p>
@@ -31,18 +32,7 @@ export default function App(): JSX.Element {
                 setLoading(true);
                 setResult(null);
                 try {
-                  const q = new URLSearchParams({ start: params.start, end: params.end });
-                  if (params.odds_date) q.set("odds_date", params.odds_date);
-                  const res = await fetch(`/api/v1/compare?${q.toString()}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                  });
-                  if (!res.ok) {
-                    const txt = await res.text();
-                    throw new Error(txt || res.statusText);
-                  }
-                  const json = await res.json();
+                  const json = await postCompare(payload, params);
                   setResult(json);
                 } catch (err: any) {
                   setError(err.message || "Request failed");
