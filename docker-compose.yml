@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: drew
+      POSTGRES_PASSWORD: pass0007
+      POSTGRES_DB: stake_n_shares
+    volumes:
+      - db-data:/var/lib/postgresql/data
+volumes:
+  db-data:
