@@ -2,7 +2,7 @@ import { useState, type JSX } from "react";
 import { CompareForm } from "./components/CompareForm";
 import ResultCard from "./components/ResultCard";
 import { ErrorBoundary } from './components/ErrorBoundary'
-import './App.css'
+// import './App.css'
 import './styles.css'
 import { postCompare } from './api/compare';
 
