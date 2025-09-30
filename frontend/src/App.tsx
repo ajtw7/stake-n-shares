@@ -2,9 +2,9 @@ import { useState, type JSX } from "react";
 import { CompareForm } from "./components/CompareForm";
 import ResultCard from "./components/ResultCard";
 import { ErrorBoundary } from './components/ErrorBoundary'
-// import './App.css'
 import './styles.css'
 import { postCompare } from './api/compare';
+import ComparisonHistory from "./components/ComparisonHistory";
 
 export default function App(): JSX.Element {
   const [result, setResult] = useState<any | null>(null);
@@ -50,6 +50,11 @@ export default function App(): JSX.Element {
             <h2>Result</h2>
             {!result && <div className="muted">No run yet — submit the form to see results here.</div>}
             {result && <ResultCard data={result} />}
+          </section>
+
+          <section className="panel">
+            <h2>History</h2>
+            <ComparisonHistory />
           </section>
         </main>
       </div>

@@ -41,3 +41,11 @@ export async function postCompare(
   }
   return body as CompareResponse;
 }
+
+export async function fetchCompareHistory(limit = 50, offset = 0) {
+  ensureBase();
+  const qs = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  const res = await fetch(`${BASE}/api/v1/compare/history?${qs}`, { method: 'GET' });
+  if (!res.ok) throw new Error(await res.text());
+  return (await res.json()) as any[];
+}
