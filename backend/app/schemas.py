@@ -1,9 +1,13 @@
 from __future__ import annotations
-
-from pydantic import BaseModel, Field, field_validator
+from typing import Literal, Any, Optional
+from datetime import datetime
+from uuid import UUID
 import re
 
+from pydantic import BaseModel, Field, field_validator, ConfigDict
+
 HEX32_RE = re.compile(r"^[0-9a-f]{32}$", re.IGNORECASE)
+SUPPORTED_LEAGUES = {"nfl"}
 
 
 class Bet(BaseModel):
@@ -13,13 +17,13 @@ class Bet(BaseModel):
     odds: float | None = Field(
         None,
         gt=1,
-        description="Optional fixed odds (>1) to bypass fetch; if omitted system fetches historical/live"
+        description="Optional fixed odds (>1) to bypass fetch; if omitted system fetches historical/live",
     )
-    outcome: str = Field(..., description="'win' or 'loss'")
+    outcome: Literal["win", "loss"] = Field(..., description="'win' or 'loss'")
 
     @field_validator("league")
     def league_supported(cls, v: str) -> str:
-        if v.lower() not in {"nfl"}:
+        if v.lower() not in SUPPORTED_LEAGUES:
             raise ValueError("Unsupported league")
         return v.upper()
 
@@ -28,12 +32,6 @@ class Bet(BaseModel):
         if not HEX32_RE.match(v):
             raise ValueError("event_id must be 32-char hex")
         return v.lower()
-
-    @field_validator("outcome")
-    def outcome_valid(cls, v: str) -> str:
-        if v not in {"win", "loss"}:
-            raise ValueError("outcome must be 'win' or 'loss'")
-        return v
 
 
 class CompareRequest(BaseModel):
@@ -45,9 +43,7 @@ class CompareRequest(BaseModel):
 
 
 class CompareRequestInput(BaseModel):
-    """
-    Input schema from API caller BEFORE enrichment (no equity_return_pct yet).
-    """
+    """Input schema before enrichment (no equity_return_pct)."""
     starting_capital: float = Field(..., gt=0, description="Total starting capital (>0)")
     equity_symbol: str = Field(..., min_length=1, description="Equity ticker symbol")
     equity_weight: float = Field(..., ge=0, le=1, description="Fraction of capital allocated to equity (0-1)")
@@ -56,3 +52,14 @@ class CompareRequestInput(BaseModel):
     @field_validator("equity_symbol")
     def symbol_trim(cls, v: str) -> str:
         return v.strip().upper()
+
+
+class HistoryOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    created_at: datetime
+    payload: Any
+    result: Any
+    params: Optional[Any] = None
+    notes: Optional[str] = None

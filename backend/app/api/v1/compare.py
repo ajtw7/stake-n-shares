@@ -6,23 +6,11 @@ from typing import Any
 
 from fastapi import APIRouter, Query, Body, HTTPException
 
-from backend.app.schemas import CompareRequestInput, Bet
+from backend.app.schemas import CompareRequestInput, Bet, HistoryOut
 from backend.app.services import build_compare_request_with_live_data, execute_compare
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-# Optional history imports (graceful if DB not wired yet)
-HISTORY_ENABLED = False
-try:
-    from fastapi import Depends
-    from sqlalchemy.orm import Session
-    from backend.app.db.session import SessionLocal, get_db
-    from backend.app.crud import history as history_crud
-    from backend.app.schemas.history import HistoryOut  # optional response model
-    HISTORY_ENABLED = True
-except Exception:
-    HISTORY_ENABLED = False
 
 
 def _parse_day(label: str, value: str) -> date:
@@ -37,14 +25,28 @@ def _parse_snapshot(label: str, value: str) -> str:
         if len(value) == 10:  # YYYY-MM-DD
             datetime.strptime(value, "%Y-%m-%d")
         else:
+            # allow full ISO; normalize Z to +00:00
             datetime.fromisoformat(value.replace("Z", "+00:00"))
     except Exception:
         raise HTTPException(status_code=422, detail=f"Invalid {label} timestamp")
     return value
 
 
+def _try_history_imports():
+    try:
+        # Import only when needed; surface exact error if something is missing
+        from backend.app.db.session import SessionLocal
+        from backend.app.crud import history as history_crud
+        return SessionLocal, history_crud
+    except Exception as e:
+        raise RuntimeError(str(e))
+
+
 def _save_history(payload_dict: dict, result_dict: dict, params_dict: dict) -> None:
-    if not HISTORY_ENABLED:
+    try:
+        SessionLocal, history_crud = _try_history_imports()
+    except RuntimeError as e:
+        logger.warning("history disabled (import error): %s", e)
         return
     try:
         db = SessionLocal()
@@ -53,7 +55,7 @@ def _save_history(payload_dict: dict, result_dict: dict, params_dict: dict) -> N
         finally:
             db.close()
     except Exception as e:
-        logger.warning("history_save_failed: %s", e)
+        logger.warning("history save failed: %s", e)
 
 
 @router.post("/compare")
@@ -63,11 +65,7 @@ def compare_handler(
     odds_date: str | None = Query(None, description="Historical odds snapshot ISO timestamp or YYYY-MM-DD"),
     payload: CompareRequestInput = Body(...)
 ):
-    logger.info(
-        "compare_request received start=%s end=%s odds_date=%s equity_symbol=%s equity_weight=%s",
-        start, end, odds_date, payload.equity_symbol, payload.equity_weight
-    )
-    # Validate date range
+    # validate dates
     start_d = _parse_day("start", start)
     end_d = _parse_day("end", end)
     if start_d > end_d:
@@ -88,14 +86,14 @@ def compare_handler(
         )
         result = execute_compare(req)
 
-        # Enrich response with odds metadata
+        # add odds metadata
         result["odds_meta"] = {
-            "snapshot_timestamp": snapshot,                 # None => live/no snapshot requested
-            "resolved_odds": req.bet.odds,                  # odds actually used in calculation
+            "snapshot_timestamp": snapshot,
+            "resolved_odds": req.bet.odds,
             "fallback_used": getattr(req.bet, "_fallback", False),
         }
 
-        # Persist history if configured
+        # persist history if possible
         params_dict = {"start": start, "end": end, **({"odds_date": snapshot} if snapshot else {})}
         payload_dict = {
             "starting_capital": payload.starting_capital,
@@ -104,29 +102,22 @@ def compare_handler(
             "bet": bet_obj.model_dump(),
         }
         _save_history(payload_dict, result, params_dict)
-
-        logger.info(
-            "compare_response roi_pct=%s resolved_odds=%s snapshot=%s fallback=%s",
-            result.get("roi_pct"),
-            result["odds_meta"]["resolved_odds"],
-            result["odds_meta"]["snapshot_timestamp"],
-            result["odds_meta"]["fallback_used"],
-        )
         return result
     except HTTPException:
-        logger.warning("compare_request failed validation")
         raise
     except Exception as e:
         logger.exception("compare_processing_error")
         raise HTTPException(status_code=502, detail=f"Processing error: {e}")
 
 
-# History endpoint (available even if DB not yet configured; returns 501 then)
-if HISTORY_ENABLED:
-    @router.get("/compare/history", response_model=list[HistoryOut])
-    def get_compare_history(limit: int = 50, offset: int = 0, db: Session = Depends(get_db)):
+@router.get("/compare/history", response_model=list[HistoryOut])
+def get_compare_history(limit: int = 50, offset: int = 0):
+    try:
+        SessionLocal, history_crud = _try_history_imports()
+    except RuntimeError as e:
+        raise HTTPException(status_code=501, detail=f"History not configured: {e}")
+    db = SessionLocal()
+    try:
         return history_crud.list_history(db, limit=limit, offset=offset)
-else:
-    @router.get("/compare/history")
-    def get_compare_history(limit: int = 50, offset: int = 0):
-        raise HTTPException(status_code=501, detail="History not configured")
+    finally:
+        db.close()
