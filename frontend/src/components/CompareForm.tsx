@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Tooltip from "./Tooltip";
 import type { CompareRequest, CompareResponse } from '../types/compare';
 import { ResultPanel } from './ResultPanel';
 import { compareFormSchema, type CompareFormValues } from '../validation/compare';
@@ -121,7 +122,9 @@ export function CompareForm({ onSubmit, submitting }: Props) {
       <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '0.75rem', width: '100%' }}>
         <div style={{ display: 'flex', gap: 12 }}>
           <label style={labelStyle}>
-            Starting Capital
+            <Tooltip text="Total starting capital you will allocate across equity + bets. Must be > 0.">
+              <span>Starting Capital</span>
+            </Tooltip>
             <input
               type="number"
               value={form.starting_capital}
@@ -130,8 +133,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
             />
             {FE('starting_capital')}
           </label>
+
           <label style={labelStyle}>
-            Equity Symbol
+            <Tooltip text="Ticker symbol for the equity (e.g. AAPL). Will be converted to uppercase.">
+              <span>Equity Symbol</span>
+            </Tooltip>
             <input
               value={form.equity_symbol}
               onChange={e => update('equity_symbol', e.target.value)}
@@ -139,8 +145,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
             />
             {FE('equity_symbol')}
           </label>
+
           <label style={labelStyle}>
-            Equity Weight
+            <Tooltip text="Fraction of capital allocated to the equity. Value between 0 and 1 (e.g. 0.5 = 50%).">
+              <span>Equity Weight</span>
+            </Tooltip>
             <input
               type="number"
               step="0.01"
@@ -154,7 +163,9 @@ export function CompareForm({ onSubmit, submitting }: Props) {
 
         <div style={{ display: 'flex', gap: 12 }}>
           <label style={labelStyle}>
-            League
+            <Tooltip text="League to use when resolving odds (currently only NFL supported).">
+              <span>League</span>
+            </Tooltip>
             <input
               value={form.league}
               onChange={e => update('league', e.target.value)}
@@ -162,8 +173,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
             />
             {FE('league')}
           </label>
+
           <label style={{ flex: 2, display: 'block' }}>
-            Event ID
+            <Tooltip text="Event identifier (32-character hex). Identifies the game/event to fetch odds for.">
+              <span>Event ID</span>
+            </Tooltip>
             <input
               value={form.event_id}
               onChange={e => update('event_id', e.target.value)}
@@ -171,8 +185,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
             />
             {FE('event_id')}
           </label>
+
           <label style={labelStyle}>
-            Stake
+            <Tooltip text="Stake amount for the bet (must be > 0).">
+              <span>Stake</span>
+            </Tooltip>
             <input
               type="number"
               value={form.stake}
@@ -185,7 +202,9 @@ export function CompareForm({ onSubmit, submitting }: Props) {
 
         <div style={{ display: 'flex', gap: 12 }}>
           <label style={labelStyle}>
-            Odds (blank = fetch)
+            <Tooltip text="Optional fixed odds to use for the bet. If omitted, historical or live odds will be fetched. Must be > 1.">
+              <span>Odds (blank = fetch)</span>
+            </Tooltip>
             <input
               value={form.odds}
               onChange={e => update('odds', e.target.value)}
@@ -194,8 +213,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
             />
             {FE('odds')}
           </label>
+
           <label style={labelStyle}>
-            Outcome
+            <Tooltip text="Outcome to simulate: 'win' or 'loss'.">
+              <span>Outcome</span>
+            </Tooltip>
             <select
               value={form.outcome}
               onChange={e => update('outcome', e.target.value as 'win'|'loss')}
@@ -205,8 +227,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
               <option value="loss">loss</option>
             </select>
           </label>
+
           <label style={labelStyle}>
-            Odds Snapshot
+            <Tooltip text="Optional snapshot timestamp for historical odds. Provide YYYY-MM-DD or full ISO timestamp.">
+              <span>Odds Snapshot</span>
+            </Tooltip>
             <input
               type="datetime-local"
               value={form.odds_date}
@@ -218,7 +243,9 @@ export function CompareForm({ onSubmit, submitting }: Props) {
 
         <div style={{ display: 'flex', gap: 12 }}>
           <label style={labelStyle}>
-            Start Date
+            <Tooltip text="Start date for the equity price range (YYYY-MM-DD).">
+              <span>Start Date</span>
+            </Tooltip>
             <input
               type="date"
               value={form.start}
@@ -227,8 +254,11 @@ export function CompareForm({ onSubmit, submitting }: Props) {
             />
             {FE('start')}
           </label>
+
           <label style={labelStyle}>
-            End Date
+            <Tooltip text="End date for the equity price range (YYYY-MM-DD).">
+              <span>End Date</span>
+            </Tooltip>
             <input
               type="date"
               value={form.end}
