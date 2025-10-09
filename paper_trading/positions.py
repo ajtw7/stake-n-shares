@@ -1,6 +1,9 @@
 from typing import List, Any, Dict
 import json
 import sys
+from uuid import UUID
+from datetime import datetime, date
+from decimal import Decimal
 
 from .account import get_trading_client
 
@@ -20,6 +23,22 @@ def _pos_to_dict(pos: Any) -> Dict:
         return pos
     # fallback
     return {"value": str(pos)}
+
+
+# new helper: recursively convert common non-JSON types to serializable ones
+def _make_json_serializable(obj: Any) -> Any:
+    if isinstance(obj, dict):
+        return {k: _make_json_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        return [_make_json_serializable(v) for v in obj]
+    if isinstance(obj, UUID):
+        return str(obj)
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    if isinstance(obj, Decimal):
+        # keep numeric semantics
+        return float(obj)
+    return obj
 
 
 def get_current_positions() -> List[Dict]:
@@ -43,5 +62,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     print(f"Found {len(positions)} positions.")
-    # pretty-print JSON for easy inspection
-    print(json.dumps(positions, indent=2))
+    # convert UUID/datetime/Decimal -> JSON-serializable types before printing
+    serializable = _make_json_serializable(positions)
+    print(json.dumps(serializable, indent=2))
