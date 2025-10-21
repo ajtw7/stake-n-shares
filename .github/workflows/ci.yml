@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -U pip
+          # install project deps if present; tolerate missing requirements.txt in early stages
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest pytest-cov
+
+      - name: Run tests with coverage
+        env:
+          # provide non-sensitive defaults so import-time checks in tests don't fail
+          ALPACA_API_KEY: ci
+          ALPACA_SECRET_KEY: ci
+          ALPACA_BASE_URL: https://paper-api.alpaca.markets
+        run: |
+          . .venv/bin/activate
+          pytest -q --cov=paper_trading --cov-report=term --cov-report=xml --cov-report=html
+
+      - name: Upload coverage HTML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+
+      # Optional: upload coverage to Codecov (uncomment + add CODECOV_TOKEN secret for private repos)
+      #- name: Upload coverage to codecov
+      #  uses: codecov/codecov-action@v4
+      #  with:
+      #    token: ${{ secrets.CODECOV_TOKEN }}
+      #    files: ./coverage.xml
+```# filepath: /Users/drew/Projects/stake-n-shares/.github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -U pip
+          # install project deps if present; tolerate missing requirements.txt in early stages
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install pytest pytest-cov
+
+      - name: Run tests with coverage
+        env:
+          # provide non-sensitive defaults so import-time checks in tests don't fail
+          ALPACA_API_KEY: ci
+          ALPACA_SECRET_KEY: ci
+          ALPACA_BASE_URL: https://paper-api.alpaca.markets
+        run: |
+          . .venv/bin/activate
+          pytest -q --cov=paper_trading --cov-report=term --cov-report=xml --cov-report=html
+
+      - name: Upload coverage HTML artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov
+
+      # Optional: upload coverage to Codecov (uncomment + add CODECOV_TOKEN secret for private repos)
+      #- name: Upload coverage to codecov
+      #  uses: codecov/codecov-action@v4
+      #  with:
+      #    token: ${{ secrets.CODECOV_TOKEN }}
