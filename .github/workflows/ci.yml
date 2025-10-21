@@ -50,9 +50,9 @@ jobs:
           name: coverage-html
           path: htmlcov
 
-      - name: Upload coverage to Codecov (optional)
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
+      # - name: Upload coverage to Codecov (optional)
+      #   if: ${{ secrets.CODECOV_TOKEN != '' }}
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     files: ./coverage.xml
