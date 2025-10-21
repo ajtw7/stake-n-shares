@@ -1,3 +1,5 @@
 .env
 alembic/versions/*.pyc
 __pycache__/
+
+/backend/alembic

@@ -46,23 +46,16 @@ else:
 
 _client = None  # cache
 
-def get_trading_client():
-    """Return a TradingClient instance (cached). Works with multiple SDK variants."""
-    global _client
-    if _client:
-        return _client
-
-    sig = inspect.signature(TradingClient.__init__)
-    params = sig.parameters
-
-    if "base_url" in params:
-        _client = TradingClient(ALPACA_API_KEY, ALPACA_SECRET_KEY, base_url=_base_url)
-    elif "paper" in params:
-        paper_flag = ("paper-api" in (_base_url or "")) or (ALPACA_PAPER.lower() in ("1", "true", "yes"))
-        _client = TradingClient(ALPACA_API_KEY, ALPACA_SECRET_KEY, paper=paper_flag)
-    else:
-        _client = TradingClient(ALPACA_API_KEY, ALPACA_SECRET_KEY)
-    return _client
+def get_trading_client(*, require_trading_enabled: bool = False):
+    base = os.getenv("ALPACA_BASE_URL")
+    key = os.getenv("ALPACA_API_KEY")
+    secret = os.getenv("ALPACA_API_SECRET")
+    if not (base and key and secret):
+        raise RuntimeError("Missing Alpaca credentials — set ALPACA_BASE_URL/ALPACA_API_KEY/ALPACA_API_SECRET")
+    enabled = os.getenv("ENABLE_TRADING", "false").lower() in ("1","true","yes")
+    if require_trading_enabled and not enabled:
+        raise RuntimeError("Trading is disabled: set ENABLE_TRADING=true to enable live trading")
+    return TradingClient(key, secret, base_url=base)
 
 def get_account_info() -> Dict[str, str]:
     client = get_trading_client()
@@ -112,4 +105,3 @@ if __name__ == "__main__":
     except SystemExit as e:
         print("Failed to fetch account configurations:", e)
 
-        

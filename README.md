@@ -1,6 +1,6 @@
 # Stake N' Shares: Where Markets Meet Matches.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![React](https://img.shields.io/badge/React-17%2B-blue) ![Next.js](https://img.shields.io/badge/Next.js-12%2B-black) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13%2B-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![React](https://img.shields.io/badge/React-17%2B-blue) ![Next.js](https://img.shields.io/badge/Next.js-12%2B-black) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13%2B-blue) [![CI](https://github.com/<owner>/<repo>/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/<repo>/actions/workflows/ci.yml)
 
 
 > **TL;DR**: a cross-domain analytics dashboard that compares how your money performs in two high-variance worlds: traditional markets and sports wagers. By pulling in equities, ETFs, and crypto alongside NBA, NFL, and soccer bets, the platform normalizes data into a single portfolio view. Users can track ROI, volatility, and Sharpe ratios side-by-side, gaining insights into whether the stock market or the sportsbook delivers a better edge
