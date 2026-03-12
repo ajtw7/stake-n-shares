@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, test, expect, afterEach } from 'vitest';
 import App from '../App';
 import type { CompareResponse } from '../types/compare';
-import { postCompare, fetchCompareHistory } from '../api/compare';
+import { postCompare } from '../api/compare';
 
 vi.mock('../api/compare', () => ({
   postCompare: vi.fn(),

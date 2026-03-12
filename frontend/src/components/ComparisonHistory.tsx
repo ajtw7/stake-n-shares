@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { fetchCompareHistory } from "../api/compare";
 
 export default function ComparisonHistory() {
