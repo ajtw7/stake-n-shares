@@ -32,3 +32,6 @@ websockets==15.0.1
 alpaca-py
 pytest-cov
 codecov
+pydantic-settings
+SQLAlchemy
+psycopg2-binary
