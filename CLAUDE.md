@@ -72,6 +72,7 @@ Integration tests (marked `@pytest.mark.integration`) are skipped in CI.
 - Tests in `tests/` cover the `paper_trading` module; tests in `backend/tests/` cover the FastAPI backend.
 - `backend/tests/conftest.py` auto-disables external APIs via monkeypatch for deterministic unit tests.
 - Frontend tests use vitest + React Testing Library + jsdom.
+- Frontend success/fallback tests render `App` (not `CompareForm` standalone) because `CompareForm` delegates API calls to its parent via `onSubmit` prop. Results render via `ResultCard` in `App`, not via `ResultPanel` inside `CompareForm`.
 
 ## Update Policy
 
