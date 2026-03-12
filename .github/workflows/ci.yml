@@ -9,6 +9,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: stake_n_shares_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +43,9 @@ jobs:
           ALPACA_BASE_URL="${ALPACA_BASE_URL:-https://paper-api.alpaca.markets}"
           echo "ALPACA_API_KEY=$ALPACA_API_KEY" >> $GITHUB_ENV
           echo "ALPACA_SECRET_KEY=$ALPACA_SECRET_KEY" >> $GITHUB_ENV
+          echo "ALPACA_API_SECRET=$ALPACA_SECRET_KEY" >> $GITHUB_ENV
           echo "ALPACA_BASE_URL=$ALPACA_BASE_URL" >> $GITHUB_ENV
+          echo "DATABASE_URL=postgresql://ci:ci@localhost:5432/stake_n_shares_test" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
@@ -47,7 +63,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           . .venv/bin/activate
-          pytest -q --cov=paper_trading --cov-report=term --cov-report=xml --cov-report=html
+          pytest -q --cov=paper_trading --cov=backend --cov-report=term --cov-report=xml --cov-report=html -m "not integration"
 
       - name: Upload coverage HTML artifact
         uses: actions/upload-artifact@v4
@@ -61,3 +77,26 @@ jobs:
       #   with:
       #     token: ${{ secrets.CODECOV_TOKEN }}
       #     files: ./coverage.xml
+
+  frontend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
