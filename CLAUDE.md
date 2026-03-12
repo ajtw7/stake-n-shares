@@ -74,6 +74,10 @@ Integration tests (marked `@pytest.mark.integration`) are skipped in CI.
 - Frontend tests use vitest + React Testing Library + jsdom.
 - Frontend success/fallback tests render `App` (not `CompareForm` standalone) because `CompareForm` delegates API calls to its parent via `onSubmit` prop. Results render via `ResultCard` in `App`, not via `ResultPanel` inside `CompareForm`.
 
+## Commit Rules
+
+- Do NOT include Claude session URLs in commit messages or PR bodies.
+
 ## Update Policy
 
 Update this file after every commit that changes project structure, dependencies, test configuration, or CI/CD setup.
