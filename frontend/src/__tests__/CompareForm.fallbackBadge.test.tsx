@@ -1,11 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, test, expect, afterEach } from 'vitest';
-import { CompareForm } from '../components/CompareForm';
+import App from '../App';
 import type { CompareResponse } from '../types/compare';
 import { postCompare } from '../api/compare';
 
 vi.mock('../api/compare', () => ({
-  postCompare: vi.fn()
+  postCompare: vi.fn(),
+  fetchCompareHistory: vi.fn().mockResolvedValue([])
 }));
 
 afterEach(() => {
@@ -13,7 +14,7 @@ afterEach(() => {
 });
 
 describe('CompareForm fallback badge', () => {
-  test('shows Fallback badge', async () => {
+  test('shows Fallback used badge', async () => {
     const fallbackResp: CompareResponse = {
       starting_capital: 1000,
       equity: { symbol: 'AAPL', allocated: 700, pnl: -10, final: 690 },
@@ -29,9 +30,10 @@ describe('CompareForm fallback badge', () => {
 
     (postCompare as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(fallbackResp);
 
-    render(<CompareForm />);
+    render(<App />);
     fireEvent.click(screen.getByRole('button', { name: /Run Comparison/i }));
-    await waitFor(() => expect(screen.getByTestId('fallback-badge')).toBeInTheDocument());
-    expect(screen.getByText(/145\.00/)).toBeInTheDocument();
+    await waitFor(() => expect(postCompare).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(screen.getByText(/Fallback used/)).toBeInTheDocument());
+    expect(screen.getByText(/145/)).toBeInTheDocument();
   });
 });

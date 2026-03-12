@@ -8,7 +8,7 @@ vi.mock('../api/compare', () => ({
 
 describe('CompareForm validation', () => {
   test('invalid event_id shows validation message', async () => {
-    render(<CompareForm />);
+    render(<CompareForm onSubmit={async () => {}} />);
     const eventInput = screen.getByLabelText(/Event ID/i);
     fireEvent.change(eventInput, { target: { value: 'bad' }});
     fireEvent.click(screen.getByRole('button', { name: /Run Comparison/i }));
